@@ -12,15 +12,17 @@
 			height: 100%;
 			margin: 0;
 			padding: 0;
+			
 		}
 		#info{
-			font-family: sans-serif;
+			user-select: none;
 			color:lightgray;
-			font-size: 14px;
 			position: absolute;
 			top:0;
 			left:0;
 			margin:5px;
+			font-family: sans-serif;
+			font-size: 15px;
 		}
 		canvas{
 			position: absolute;
@@ -34,6 +36,7 @@
 			padding: 9px 12px;
 			border-radius: 3px;
 			cursor: pointer;
+			font-size: 15px;
 		}
 		.btn:hover, .btn.active {
 			background-color: dodgerblue;
@@ -55,6 +58,7 @@
 		<button id="btn_clear" class="btn"><i class="fa fa-trash"></i> Clear (Backspace)</button>
 		<input id="btn_color" type="color">
 		<span>Colors (0,1,...,8,9)</span>
+		<p>Use the mouse click to draw. Shorcuts available: P,+,-,L,R,C,E,Backspace,0,1,..,8,9 (Desktop Only)</p>
 	</div>
 	
 	<script type="text/javascript">
@@ -76,7 +80,7 @@
 		var currTool = tool.pen;
 		var penSize = 30;
 		var eraserSize = 30;
-		var maxPenSize = 50;
+		var maxPenSize = 100;
 		var minPenSize = 5
 		var color = '#000000';
 		var drawing = false;
@@ -124,15 +128,16 @@
 
 			if(key == 1)	color = '#ff5964';
 			if(key == 2)	color = '#ffe066';
-			if(key == 3)	color = '#f0a6ca';
-			if(key == 4)	color = '#35a7ff';
+			if(key == 3)	color = '#35a7ff';
+			if(key == 4)	color = '#b5e2fa';
 			if(key == 5)	color = '#5bc0be';
-			if(key == 6)	color = '#b5e2fa';
+			if(key == 6)	color = '#348aa7';
 			if(key == 7)	color = '#5dd39e';
-			if(key == 8)	color = '#348aa7';
+			if(key == 8)	color = '#f0a6ca';
 			if(key == 9)	color = '#ffffff';
 			if(key == 0)	color = '#000000';
 
+			/*
 			if(key == 1)	color = '#ef233c';
 			if(key == 2)	color = '#d80032';
 			if(key == 3)	color = '#0353a4';
@@ -143,6 +148,7 @@
 			if(key == 8)	color = '#f29559';
 			if(key == 9)	color = '#ffffff';
 			if(key == 0)	color = '#000000';
+			*/
 
 			btn_color.value = color;
 
