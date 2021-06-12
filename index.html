@@ -1,321 +1,359 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Drawing Board</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Drawing Board</title>
 
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-	<style type="text/css">
-		body,html{
-			width: 100%;
-			height: 100%;
-			margin: 0;
-			padding: 0;
-			
-		}
-		#info{
-			user-select: none;
-			color:lightgray;
-			position: absolute;
-			top:0;
-			left:0;
-			margin:5px;
-			font-family: sans-serif;
-			font-size: 15px;
-		}
-		canvas{
-			position: absolute;
-			top: 0;
-			left: 0;
-		}
-		.btn {
-			background-color: lightgray;
-			border: none;
-			color: white;
-			padding: 9px 12px;
-			border-radius: 3px;
-			cursor: pointer;
-			font-size: 15px;
-		}
-		.btn:hover, .btn.active {
-			background-color: dodgerblue;
-		}
-	</style>
-</head>
-<body>
-	<canvas id="canvas"></canvas>
-	<canvas id="canvas_guide"></canvas> 
-	<div id="info">
-		<button id="btn_pen" class="btn active"><i class="fa fa-pencil"></i> Pen (P)</button>
-		<button id="btn_plus" class="btn"><i class="fa fa-plus"></i></button>
-		<button id="btn_minus" class="btn"><i class="fa fa-minus"></i></button>
-		  &nbsp;&nbsp;
-		<button id="btn_line" class="btn"><i class="fa fa-long-arrow-right"></i> Line (L)</button>
-		<button id="btn_rectangle" class="btn"><i class="fa fa-square"></i> Rectangle (R)</button>
-		<button id="btn_circle" class="btn"><i class="fa fa-circle"></i> Circle (C)</button>
-		<button id="btn_eraser" class="btn"><i class="fa fa-eraser"></i> Eraser (E)</button>
-		<button id="btn_clear" class="btn"><i class="fa fa-trash"></i> Clear (Backspace)</button>
-		<input id="btn_color" type="color">
-		<span>Colors (0,1,...,8,9)</span>
-		<p>Use the mouse click to draw. Shorcuts available: P,+,-,L,R,C,E,Backspace,0,1,..,8,9 (Desktop Only)</p>
-	</div>
-	
-	<script type="text/javascript">
-		var canvas_tag = document.getElementById('canvas');
-		var canvas = canvas_tag.getContext('2d');
-		var canvas_guide_tag = document.getElementById('canvas_guide');
-		var canvas_guide = canvas_guide_tag.getContext('2d');
-		var posX, posY;
-		var startX, startY;
-		var lastX, lastY;
-		var diff = 20;
-		var tool = {
-			pen: 				'pen',
-			line: 			'line',
-			rectangle: 	'rectangle',
-			circle: 		'circle',
-			eraser: 		'eraser',
-		}
-		var currTool = tool.pen;
-		var penSize = 30;
-		var eraserSize = 30;
-		var maxPenSize = 100;
-		var minPenSize = 5
-		var color = '#000000';
-		var drawing = false;
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+    <!--the below tag gives the styling to this html document-->
+    <style type="text/css">
+      body,
+      html {
+        width: 99.9%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      #info {
+        user-select: none;
+        color: lightgray;
+        position: absolute;
+        top: 0;
+        left: 0;
+        margin: 5px;
+        font-family: sans-serif;
+        font-size: 15px;
+      }
+      canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+      .btn {
+        background-color: lightgray;
+        border: none;
+        color: white;
+        padding: 9px 12px;
+        border-radius: 3px;
+        cursor: pointer;
+        font-size: 15px;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+    <canvas id="canvas_guide"></canvas>
+    <div id="info">
+      <button id="btn_pen" class="btn active">
+        <i class="fa fa-pencil"></i> Pen (P)
+      </button>
+      <button id="btn_plus" class="btn"><i class="fa fa-plus"></i></button>
+      <button id="btn_minus" class="btn"><i class="fa fa-minus"></i></button>
+      &nbsp;&nbsp;
+      <button id="btn_line" class="btn">
+        <i class="fa fa-long-arrow-right"></i> Line (L)
+      </button>
+      <button id="btn_rectangle" class="btn">
+        <i class="fa fa-square"></i> Rectangle (R)
+      </button>
+      <button id="btn_circle" class="btn">
+        <i class="fa fa-circle"></i> Circle (C)
+      </button>
+      <button id="btn_eraser" class="btn">
+        <i class="fa fa-eraser"></i> Eraser (E)
+      </button>
+      <button id="btn_clear" class="btn">
+        <i class="fa fa-trash"></i> Clear (Backspace)
+      </button>
+      <input id="btn_color" type="color" />
+      <span>Colors (0,1,...,8,9)</span>
+      <p>
+        Use the mouse click to draw. Shorcuts available:
+        P,+,-,L,R,C,E,Backspace,0,1,..,8,9 (Desktop Only)
+      </p>
+    </div>
 
-		//interface
-		var btn_pen = document.getElementById('btn_pen');
-		var btn_rectangle = document.getElementById('btn_rectangle');
-		var btn_circle = document.getElementById('btn_circle');
-		var btn_eraser = document.getElementById('btn_eraser');
-		var btn_clear = document.getElementById('btn_clear');
-		
-		window.addEventListener('mousedown',mouseDown);
-		window.addEventListener('mousemove',mouseMove);
-		window.addEventListener('mouseup',mouseUp);
-		window.addEventListener('keydown',keyDown);
-		btn_pen.addEventListener(				'click',()=>{ 		currTool = tool.pen; 					activeBtn(); });
-		btn_line.addEventListener(			'click',()=>{ 		currTool = tool.line; 				activeBtn(); });
-		btn_rectangle.addEventListener(	'click',()=>{ 		currTool = tool.rectangle; 		activeBtn(); });
-		btn_circle.addEventListener(		'click',()=>{ 		currTool = tool.circle; 			activeBtn(); });
-		btn_eraser.addEventListener(		'click',()=>{ 		currTool = tool.eraser; 			activeBtn(); });
-		btn_clear.addEventListener(			'click',()=>{ 		confirmClear();								activeBtn(); });
+    <script type="text/javascript">
+      var canvas_tag = document.getElementById("canvas");
+      var canvas = canvas_tag.getContext("2d");
+      var canvas_guide_tag = document.getElementById("canvas_guide");
+      var canvas_guide = canvas_guide_tag.getContext("2d");
+      var posX, posY;
+      var startX, startY;
+      var lastX, lastY;
+      var diff = 20;
+      var tool = {
+        pen: "pen",
+        line: "line",
+        rectangle: "rectangle",
+        circle: "circle",
+        eraser: "eraser",
+      };
+      var currTool = tool.pen;
+      var penSize = 30;
+      var eraserSize = 30;
+      var maxPenSize = 100;
+      var minPenSize = 5;
+      var color = "#000000";
+      var drawing = false;
 
+      //interface
+      var btn_pen = document.getElementById("btn_pen");
+      var btn_rectangle = document.getElementById("btn_rectangle");
+      var btn_circle = document.getElementById("btn_circle");
+      var btn_eraser = document.getElementById("btn_eraser");
+      var btn_clear = document.getElementById("btn_clear");
 
-		function activeBtn() {
-			btn_pen.classList.remove('active');
-			btn_line.classList.remove('active');
-			btn_rectangle.classList.remove('active');
-			btn_circle.classList.remove('active');
-			btn_eraser.classList.remove('active');
+      window.addEventListener("mousedown", mouseDown);
+      window.addEventListener("mousemove", mouseMove);
+      window.addEventListener("mouseup", mouseUp);
+      window.addEventListener("keydown", keyDown);
+      btn_pen.addEventListener("click", () => {
+        currTool = tool.pen;
+        activeBtn();
+      });
+      btn_line.addEventListener("click", () => {
+        currTool = tool.line;
+        activeBtn();
+      });
+      btn_rectangle.addEventListener("click", () => {
+        currTool = tool.rectangle;
+        activeBtn();
+      });
+      btn_circle.addEventListener("click", () => {
+        currTool = tool.circle;
+        activeBtn();
+      });
+      btn_eraser.addEventListener("click", () => {
+        currTool = tool.eraser;
+        activeBtn();
+      });
+      btn_clear.addEventListener("click", () => {
+        confirmClear();
+        activeBtn();
+      });
 
-			if(currTool == tool.pen) 					btn_pen.classList.add('active');
-			if(currTool == tool.line) 					btn_line.classList.add('active');
-			if(currTool == tool.rectangle) 		btn_rectangle.classList.add('active');
-			if(currTool == tool.circle) 		btn_circle.classList.add('active');
-			if(currTool == tool.eraser) 		btn_eraser.classList.add('active');
-		}
-		function keyDown(e) {
-			var key = e.key;
+      function activeBtn() {
+        btn_pen.classList.remove("active");
+        btn_line.classList.remove("active");
+        btn_rectangle.classList.remove("active");
+        btn_circle.classList.remove("active");
+        btn_eraser.classList.remove("active");
 
-			if(key == 'p') 	currTool = tool.pen;
-			if(key == 'l') 	currTool = tool.line;
-			if(key == 'r') 	currTool = tool.rectangle;
-			if(key == 'c') 	currTool = tool.circle;
-			if(key == 'e') 	currTool = tool.eraser;
+        if (currTool == tool.pen) btn_pen.classList.add("active");
+        if (currTool == tool.line) btn_line.classList.add("active");
+        if (currTool == tool.rectangle) btn_rectangle.classList.add("active");
+        if (currTool == tool.circle) btn_circle.classList.add("active");
+        if (currTool == tool.eraser) btn_eraser.classList.add("active");
+      }
+      function keyDown(e) {
+        var key = e.key;
 
-			if(key == 1)	color = '#ff5964';
-			if(key == 2)	color = '#ffe066';
-			if(key == 3)	color = '#35a7ff';
-			if(key == 4)	color = '#b5e2fa';
-			if(key == 5)	color = '#5bc0be';
-			if(key == 6)	color = '#348aa7';
-			if(key == 7)	color = '#5dd39e';
-			if(key == 8)	color = '#f0a6ca';
-			if(key == 9)	color = '#ffffff';
-			if(key == 0)	color = '#000000';
+        if (key == "p") currTool = tool.pen;
+        if (key == "l") currTool = tool.line;
+        if (key == "r") currTool = tool.rectangle;
+        if (key == "c") currTool = tool.circle;
+        if (key == "e") currTool = tool.eraser;
 
-			btn_color.value = color;
+        if (key == 1) color = "#ff5964";
+        if (key == 2) color = "#ffe066";
+        if (key == 3) color = "#35a7ff";
+        if (key == 4) color = "#b5e2fa";
+        if (key == 5) color = "#5bc0be";
+        if (key == 6) color = "#348aa7";
+        if (key == 7) color = "#5dd39e";
+        if (key == 8) color = "#f0a6ca";
+        if (key == 9) color = "#ffffff";
+        if (key == 0) color = "#000000";
 
-			if(key == '+') penSize+=5;
-			if(key == '-') penSize-=5;
-			penSize = Math.min(Math.max(penSize,minPenSize),maxPenSize)
+        btn_color.value = color;
 
-			if(key == 'Backspace') confirmClear();
+        if (key == "+") penSize += 5;
+        if (key == "-") penSize -= 5;
+        penSize = Math.min(Math.max(penSize, minPenSize), maxPenSize);
 
-			refreshPointer();
-			activeBtn();
-		}
+        if (key == "Backspace") confirmClear();
 
-		function confirmClear() {
-			if(confirm('Seguro que deseas borrar?')){
-				canvas.clearRect(0,0,canvas_tag.width,canvas_tag.height)
-			}
-		}
+        refreshPointer();
+        activeBtn();
+      }
 
-		function mouseDown(e) {
-			
-			startX = posX = lastX = e.clientX;
-			startY = posY = lastY = e.clientY;
-			drawing = true;
-			color = document.getElementById('btn_color').value;
-		}
+      function confirmClear() {
+        if (confirm("Seguro que deseas borrar?")) {
+          canvas.clearRect(0, 0, canvas_tag.width, canvas_tag.height);
+        }
+      }
 
-		function mouseMove(e) 
-		{
-			var mouseX = e.clientX;
-			var mouseY = e.clientY;
-			
-			refreshPointer();
+      function mouseDown(e) {
+        startX = posX = lastX = e.clientX;
+        startY = posY = lastY = e.clientY;
+        drawing = true;
+        color = document.getElementById("btn_color").value;
+      }
 
-			if(drawing)
-			{
-				if(currTool == tool.pen)
-				{
-					if(Math.abs(lastX-mouseX)>diff || Math.abs(lastY-mouseY)>diff)
-					{
-						canvas.beginPath();
-						canvas.strokeStyle = color;
-						canvas.lineWidth = penSize;
-						canvas.moveTo(lastX,lastY);
-						canvas.lineTo(mouseX,mouseY);
-						canvas.stroke();
-						canvas.closePath();
-						lastX = mouseX;
-						lastY = mouseY;
-					}
-				}
+      function mouseMove(e) {
+        var mouseX = e.clientX;
+        var mouseY = e.clientY;
 
-				if(currTool == tool.eraser)
-				{
-					if(Math.abs(lastX-mouseX)>diff || Math.abs(lastY-mouseY)>diff)
-					{
-						canvas.beginPath();
-						canvas.strokeStyle = 'white';
-						canvas.lineWidth = eraserSize;
-						canvas.moveTo(lastX,lastY);
-						canvas.lineTo(mouseX,mouseY);
-						canvas.stroke();
-						canvas.closePath();
-						lastX = mouseX;
-						lastY = mouseY;
-					}
-				}
-			}
+        refreshPointer();
 
-			posX = mouseX;
-			posY = mouseY;
-		}
-		function mouseUp() {
+        if (drawing) {
+          if (currTool == tool.pen) {
+            if (
+              Math.abs(lastX - mouseX) > diff ||
+              Math.abs(lastY - mouseY) > diff
+            ) {
+              canvas.beginPath();
+              canvas.strokeStyle = color;
+              canvas.lineWidth = penSize;
+              canvas.moveTo(lastX, lastY);
+              canvas.lineTo(mouseX, mouseY);
+              canvas.stroke();
+              canvas.closePath();
+              lastX = mouseX;
+              lastY = mouseY;
+            }
+          }
 
-			if(drawing)
-			{
-				if(currTool == tool.rectangle) 		drawRectangle(startX,startY,posX-startX,posY-startY);
-				if(currTool == tool.circle)				drawCircle(startX,startY,Math.max(Math.abs(startX-posX),Math.abs(startY-posY)));
-				if(currTool == tool.line) 				drawLine(startX,startY,posX,posY);
-			}
-			drawing = false;
-			refreshPointer();
-		}
+          if (currTool == tool.eraser) {
+            if (
+              Math.abs(lastX - mouseX) > diff ||
+              Math.abs(lastY - mouseY) > diff
+            ) {
+              canvas.beginPath();
+              canvas.strokeStyle = "white";
+              canvas.lineWidth = eraserSize;
+              canvas.moveTo(lastX, lastY);
+              canvas.lineTo(mouseX, mouseY);
+              canvas.stroke();
+              canvas.closePath();
+              lastX = mouseX;
+              lastY = mouseY;
+            }
+          }
+        }
 
-		function drawLine(fromX,fromY,toX,toY) {
-			canvas.beginPath();
-			canvas.arc(startX,startY,penSize/2,0, 2 * Math.PI);
-			canvas.fillStyle = color;
-			canvas.fill();
-			canvas.closePath();
+        posX = mouseX;
+        posY = mouseY;
+      }
+      function mouseUp() {
+        if (drawing) {
+          if (currTool == tool.rectangle)
+            drawRectangle(startX, startY, posX - startX, posY - startY);
+          if (currTool == tool.circle)
+            drawCircle(
+              startX,
+              startY,
+              Math.max(Math.abs(startX - posX), Math.abs(startY - posY))
+            );
+          if (currTool == tool.line) drawLine(startX, startY, posX, posY);
+        }
+        drawing = false;
+        refreshPointer();
+      }
 
-			canvas.beginPath();
-			canvas.strokeStyle = color;
-			canvas.lineWidth = penSize;
-			canvas.moveTo(startX,startY);
-			canvas.lineTo(posX,posY);
-			canvas.stroke();
-			canvas.closePath();	
+      function drawLine(fromX, fromY, toX, toY) {
+        canvas.beginPath();
+        canvas.arc(startX, startY, penSize / 2, 0, 2 * Math.PI);
+        canvas.fillStyle = color;
+        canvas.fill();
+        canvas.closePath();
 
-			canvas.beginPath();
-			canvas.arc(toX,toY,penSize/2,0, 2 * Math.PI);
-			canvas.fillStyle = color;
-			canvas.fill();
-			canvas.closePath();
-		}
+        canvas.beginPath();
+        canvas.strokeStyle = color;
+        canvas.lineWidth = penSize;
+        canvas.moveTo(startX, startY);
+        canvas.lineTo(posX, posY);
+        canvas.stroke();
+        canvas.closePath();
 
-		function drawCircle(x,y,width) {
-			canvas.beginPath();
-			canvas.arc(x,y,width,0, 2 * Math.PI);
-			canvas.fillStyle = color;
-			canvas.fill();
-			canvas.closePath();	
-		}
+        canvas.beginPath();
+        canvas.arc(toX, toY, penSize / 2, 0, 2 * Math.PI);
+        canvas.fillStyle = color;
+        canvas.fill();
+        canvas.closePath();
+      }
 
-		function drawRectangle(x,y,width,height) {
-			canvas.beginPath();
-			canvas.rect(x, y, width, height);
-			canvas.fillStyle = color;
-			canvas.fill();
-			canvas.closePath();	
-		}
+      function drawCircle(x, y, width) {
+        canvas.beginPath();
+        canvas.arc(x, y, width, 0, 2 * Math.PI);
+        canvas.fillStyle = color;
+        canvas.fill();
+        canvas.closePath();
+      }
 
-		function refreshPointer()
-		{
-			canvas_guide.clearRect(0,0,canvas_guide_tag.width,canvas_guide_tag.height);			//CLEAR
+      function drawRectangle(x, y, width, height) {
+        canvas.beginPath();
+        canvas.rect(x, y, width, height);
+        canvas.fillStyle = color;
+        canvas.fill();
+        canvas.closePath();
+      }
 
-			canvas_guide.beginPath();
-			canvas_guide.fillStyle = color;
+      function refreshPointer() {
+        canvas_guide.clearRect(
+          0,
+          0,
+          canvas_guide_tag.width,
+          canvas_guide_tag.height
+        ); //CLEAR
 
-			if (currTool == tool.pen)
-			{
-				canvas_guide.arc(posX,posY,penSize/2,0, 2 * Math.PI);
-			}
-			else if (currTool == tool.line)
-			{
-				canvas_guide.arc(posX,posY,penSize/2,0, 2 * Math.PI);
-				if(drawing)
-				{
-					canvas_guide.arc(startX,startY,penSize/2,0, 2 * Math.PI);
-					canvas_guide.fill();
-					canvas_guide.closePath();
+        canvas_guide.beginPath();
+        canvas_guide.fillStyle = color;
 
-					canvas_guide.beginPath();
-					canvas_guide.strokeStyle = color;
-					canvas_guide.lineWidth = penSize;
-					canvas_guide.moveTo(startX,startY);
-					canvas_guide.lineTo(posX,posY);
-					canvas_guide.stroke();
-				} 
-			}
-			else if (currTool == tool.rectangle)
-			{
-				canvas_guide.rect(posX-5, posY-5, 10, 10);
-				if(drawing) canvas_guide.rect(startX, startY, posX-startX, posY-startY);
-			}
-			else if (currTool == tool.circle)
-			{
-				canvas_guide.arc(posX,posY,5,0, 2 * Math.PI);
-				if(drawing) canvas_guide.arc(startX,startY,Math.max(Math.abs(startX-posX),Math.abs(startY-posY)),0, 2 * Math.PI);
-			}
-			else if (currTool == tool.eraser)
-			{
-				canvas_guide.fillStyle = '#ffffff';
-				canvas_guide.strokeStyle = '#000000';
-				canvas_guide.lineWidth = 2;
-				canvas_guide.arc(posX,posY,eraserSize/2,0, 2 * Math.PI);
-				canvas_guide.stroke();
-			}
+        if (currTool == tool.pen) {
+          canvas_guide.arc(posX, posY, penSize / 2, 0, 2 * Math.PI);
+        } else if (currTool == tool.line) {
+          canvas_guide.arc(posX, posY, penSize / 2, 0, 2 * Math.PI);
+          if (drawing) {
+            canvas_guide.arc(startX, startY, penSize / 2, 0, 2 * Math.PI);
+            canvas_guide.fill();
+            canvas_guide.closePath();
 
-			canvas_guide.fill();
-			canvas_guide.closePath();
-		}
+            canvas_guide.beginPath();
+            canvas_guide.strokeStyle = color;
+            canvas_guide.lineWidth = penSize;
+            canvas_guide.moveTo(startX, startY);
+            canvas_guide.lineTo(posX, posY);
+            canvas_guide.stroke();
+          }
+        } else if (currTool == tool.rectangle) {
+          canvas_guide.rect(posX - 5, posY - 5, 10, 10);
+          if (drawing)
+            canvas_guide.rect(startX, startY, posX - startX, posY - startY);
+        } else if (currTool == tool.circle) {
+          canvas_guide.arc(posX, posY, 5, 0, 2 * Math.PI);
+          if (drawing)
+            canvas_guide.arc(
+              startX,
+              startY,
+              Math.max(Math.abs(startX - posX), Math.abs(startY - posY)),
+              0,
+              2 * Math.PI
+            );
+        } else if (currTool == tool.eraser) {
+          canvas_guide.fillStyle = "#ffffff";
+          canvas_guide.strokeStyle = "#000000";
+          canvas_guide.lineWidth = 2;
+          canvas_guide.arc(posX, posY, eraserSize / 2, 0, 2 * Math.PI);
+          canvas_guide.stroke();
+        }
 
-		function onResize() {
-			canvas_tag.width = window.innerWidth;
-			canvas_tag.height = window.innerHeight;
-			canvas_guide_tag.width = window.innerWidth;
-			canvas_guide_tag.height = window.innerHeight;
-		}
-		onResize();
-	</script>
-</body>
+        canvas_guide.fill();
+        canvas_guide.closePath();
+      }
+
+      function onResize() {
+        canvas_tag.width = window.innerWidth;
+        canvas_tag.height = window.innerHeight;
+        canvas_guide_tag.width = window.innerWidth;
+        canvas_guide_tag.height = window.innerHeight;
+      }
+      onResize();
+    </script>
+  </body>
 </html>
